@@ -1,3 +1,5 @@
+
+
 const WHITE = 0xffffff;
 const BLUE = 0x0000ff;
 const GRAY = 0xa0a0a0;
@@ -25,7 +27,16 @@ class App {
         this.scene.add(this.earth);
 
 
-        //make moon
+        // earth label
+        this.earthLabel = new THREE.Mesh(
+            new THREE.PlaneGeometry(50,15),
+            new THREE.MeshBasicMaterial({color:WHITE, side: THREE.DoubleSide})
+        );
+        this.earthLabel.position.z = -300;
+        this.earthLabel.position.y = 80;
+        this.scene.add(this.earthLabel);
+
+        // make moon
         const moon_material = new THREE.MeshLambertMaterial({color:GRAY});
         this.moon = new THREE.Mesh(new THREE.SphereGeometry(10,16,16),moon_material);
         this.moon.position.x  = 100;
@@ -34,11 +45,21 @@ class App {
         this.moonGroup.add(this.moon);
         this.scene.add(this.moonGroup);
 
+        // make moon label
+        this.moonLabel = new THREE.Mesh(
+            new THREE.PlaneGeometry(50,15),
+            new THREE.MeshBasicMaterial({color: WHITE, side: THREE.DoubleSide})
+        );
+        this.moonLabel.position.x = 100;
+        this.moonLabel.position.y = 30;
+        this.moonGroup.add(this.moonLabel);
+
         //make lights
-        const sunLight = new THREE.PointLight(WHITE,10);
-        sunLight.position.x = 10;
+        const sunLight = new THREE.DirectionalLight(WHITE,1.0);
+        sunLight.position.x = -300;
         sunLight.position.y = 0;
-        sunLight.position.z = 0;
+        sunLight.position.z = -300;
+        sunLight.target = this.earth;
         this.scene.add(sunLight);
 
 
@@ -50,6 +71,7 @@ class App {
     tick() {
         this.moonGroup.rotation.y -= 0.01;
         this.earth.rotation.y -= 0.01;
+        this.moonLabel.rotation.y += 0.01;
         this.renderer.render(this.scene,this.camera);
     }
 
