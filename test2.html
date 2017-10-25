@@ -9,7 +9,25 @@
 <div id="stage"></div>
 
 
+
+
 <script src="./node_modules/three/build/three.js"></script>
+<script src="./node_modules/webxr-examples/dist/webxr-polyfill.js"></script>
+<script src="./node_modules/webxr-examples/examples/common.js"></script>
 <script src="./earth_moon.js"></script>
+
+
+<script type="text/javascript">
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            try {
+                window.pageApp = new App(document.getElementById('stage'));
+            } catch(e) {
+                console.error('page error', e)
+            }
+        }, 1000)
+    })
+
+</script>
 </body>
 </html>
