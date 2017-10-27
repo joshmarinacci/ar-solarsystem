@@ -67,12 +67,17 @@ class PlanetGroup {
                 moonOrbit.rotation.x = Math.PI / 2;
                 this.group.add(moonOrbit);
 
+                if(info.rotationOffset) {
+                    moonContainer.rotation.y += info.rotationOffset;
+                }
+
+
                 this.moons.push({
                     moon:moon,
                     orbit:moonOrbit,
                     container:moonContainer,
                     periodFactor:info.orbitalPeriodFactor,
-                    rotationFactor:info.rotationFactor
+                    rotationFactor:info.rotationFactor,
                 });
             })
         }
@@ -197,6 +202,23 @@ class App extends XRExampleBase{
             planetRadius:0.3,
             planetTexture:'mars.jpg',
             planetRotationFactor: 3,
+            moons:[
+                {
+                    radius:0.1,
+                    orbitalRadius: 1.0,
+                    orbitalPeriodFactor:-0.2,
+                    texture:'phobosbump.jpg',
+                    rotationFactor: -0.2
+                },
+                {
+                    radius:0.1,
+                    orbitalRadius: 1.0,
+                    orbitalPeriodFactor:-0.2,
+                    texture:'deimosbump.jpg',
+                    rotationFactor: -0.2,
+                    rotationOffset: Math.PI,
+                }
+            ]
         });
         this.floorGroup.add(mars.group);
         mars.group.visible = false;
