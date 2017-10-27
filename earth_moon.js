@@ -93,9 +93,12 @@ class App extends XRExampleBase{
     initializeScene() {
         this.current = 0;
         this.planets = [];
+        this.makeMercury();
+        this.makeVenus();
         this.makeMoonEarth();
         this.makeMars();
         this.makeJupiter();
+        this.makeSaturn();
         this.makeLights();
         this.addEvents();
     }
@@ -110,6 +113,28 @@ class App extends XRExampleBase{
 
 
         this.scene.add(new THREE.AmbientLight(WHITE, 0.5));
+    }
+
+    makeMercury() {
+        const planet =  new PlanetGroup({
+            planetRadius:0.3,
+            planetTexture:'mercury.jpg',
+            planetRotationFactor: 1.0,
+        });
+        this.floorGroup.add(planet.group);
+        planet.group.visible = false;
+        this.planets.push(planet);
+    }
+
+    makeVenus() {
+        const planet =  new PlanetGroup({
+            planetRadius:0.4,
+            planetTexture:'venus.jpeg',
+            planetRotationFactor: 1.0,
+        });
+        this.floorGroup.add(planet.group);
+        planet.group.visible = false;
+        this.planets.push(planet);
     }
 
     makeMoonEarth(){
@@ -168,25 +193,36 @@ class App extends XRExampleBase{
     }
 
     makeMars() {
-        this.mars =  new PlanetGroup({
+        const mars =  new PlanetGroup({
             planetRadius:0.3,
             planetTexture:'mars.jpg',
             planetRotationFactor: 3,
         });
-        this.floorGroup.add(this.mars.group);
-        this.mars.group.visible = false;
-        this.planets.push(this.mars);
+        this.floorGroup.add(mars.group);
+        mars.group.visible = false;
+        this.planets.push(mars);
     }
 
     makeJupiter() {
-        this.jupiter =  new PlanetGroup({
+        const jupiter =  new PlanetGroup({
             planetRadius:0.8,
             planetTexture:'jupiter.jpg',
             planetRotationFactor: 0.5,
         });
-        this.floorGroup.add(this.jupiter.group);
-        this.jupiter.group.visible = false;
-        this.planets.push(this.jupiter);
+        this.floorGroup.add(jupiter.group);
+        jupiter.group.visible = false;
+        this.planets.push(jupiter);
+    }
+
+    makeSaturn() {
+        const saturn =  new PlanetGroup({
+            planetRadius:0.75,
+            planetTexture:'saturn.jpg',
+            planetRotationFactor: 0.3,
+        });
+        this.floorGroup.add(saturn.group);
+        saturn.group.visible = false;
+        this.planets.push(saturn);
     }
 
     addEvents() {
