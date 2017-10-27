@@ -13,6 +13,8 @@ function on(elem,type,cb) {
 class PlanetGroup {
     constructor(opts) {
         this.group = new THREE.Group();
+        this.group.position.z = -3;
+        this.group.position.y = 1;
         this.planet = new THREE.Mesh(new THREE.SphereGeometry(opts.planetRadius, 16, 16), new THREE.MeshLambertMaterial({color:WHITE}));
         if(opts.planetTexture) {
             let textureLoader = new THREE.TextureLoader();
@@ -23,8 +25,6 @@ class PlanetGroup {
                 this.planet.material = new THREE.MeshLambertMaterial({color:WHITE, map:tex});
             });
         }
-        this.planet.position.z = -3;
-        this.planet.position.y = 1;
         this.group.add(this.planet);
 
         this.orbit = new THREE.Mesh(
@@ -33,9 +33,57 @@ class PlanetGroup {
         );
         this.orbit.rotation.x = Math.PI/2;
         this.orbit.position.x = -10.0;
-        this.orbit.position.z = -3;
-        this.orbit.position.y = 1;
+        this.orbit.position.y = -0.5;
         this.group.add(this.orbit);
+
+        if(opts.planetRotationFactor) {
+            this.planetRotationFactor = opts.planetRotationFactor;
+        } else {
+            this.planetRotationFactor = 1.0;
+        }
+
+        this.moons = [];
+        if(opts.moons) {
+            opts.moons.forEach((info)=>{
+                const moon = new THREE.Mesh(new THREE.SphereGeometry(info.radius, 16, 16), new THREE.MeshLambertMaterial({color:WHITE}));
+                let textureLoader = new THREE.TextureLoader();
+                textureLoader.crossOrigin = true;
+                // console.log("loading the texture",info.texture)
+                textureLoader.load(info.texture,(tex) => {
+                    // console.log(`loaded ${info.texture}`,tex);
+                    moon.material = new THREE.MeshLambertMaterial({color:WHITE, map:tex});
+                });
+                moon.position.x = info.orbitalRadius;
+                const moonContainer = new THREE.Group();
+                moonContainer.add(moon);
+                this.group.add(moonContainer);
+
+
+                // make moon orbit path
+                const moonOrbit = new THREE.Mesh(
+                    new THREE.TorusGeometry(info.orbitalRadius, 0.01, 10, 50),
+                    new THREE.MeshBasicMaterial({color: WHITE, wireframe: false, transparent: true, opacity: 0.7})
+                );
+                moonOrbit.rotation.x = Math.PI / 2;
+                this.group.add(moonOrbit);
+
+                this.moons.push({
+                    moon:moon,
+                    orbit:moonOrbit,
+                    container:moonContainer,
+                    periodFactor:info.orbitalPeriodFactor,
+                    rotationFactor:info.rotationFactor
+                });
+            })
+        }
+    }
+
+    rotate(rate) {
+        this.planet.rotation.y += rate*this.planetRotationFactor;
+        this.moons.forEach((moon)=>{
+            moon.moon.rotation.y += rate*moon.rotationFactor;
+            moon.container.rotation.y += rate*moon.periodFactor;
+        })
     }
 }
 class App extends XRExampleBase{
@@ -67,7 +115,17 @@ class App extends XRExampleBase{
     makeMoonEarth(){
         this.earth =  new PlanetGroup({
             planetRadius:0.5,
-            planetTexture:'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthmap1k.jpg'
+            planetTexture:'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthmap1k.jpg',
+            planetRotationFactor: 1.0,
+            moons:[
+                {
+                    radius:0.1,
+                    orbitalRadius: 1.0,
+                    orbitalPeriodFactor:-0.2,
+                    texture:'https://raw.githubusercontent.com/CoryG89/MoonDemo/master/img/maps/moon.jpg',
+                    rotationFactor: -0.2
+                }
+            ]
         });
         this.planets.push(this.earth);
 
@@ -81,21 +139,6 @@ class App extends XRExampleBase{
         // this.earthLabel.position.y = 1.8;
         // this.earthGroup.add(this.earthLabel);
 
-        // make moon
-        /*
-        const moon_material = new THREE.MeshLambertMaterial({color: GRAY});
-        this.moon = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), moon_material);
-        this.moon.position.x = 1.0;
-        this.moonGroup = new THREE.Group();
-        this.moonGroup.position.z = -3.0;
-        this.moonGroup.position.y = 1;
-        this.moonGroup.add(this.moon);
-        this.earthGroup.add(this.moonGroup);
-        textureLoader.load('https://raw.githubusercontent.com/CoryG89/MoonDemo/master/img/maps/moon.jpg',(tex)=>{
-            this.moon.material = new THREE.MeshLambertMaterial({color:WHITE, map:tex});
-        })
-        */
-
         // make moon label
         // this.moonLabel = new THREE.Mesh(
         //     new THREE.PlaneGeometry(0.5, 0.15),
@@ -104,17 +147,6 @@ class App extends XRExampleBase{
         // this.moonLabel.position.x = 1.0;
         // this.moonLabel.position.y = 0.3;
         // this.moonGroup.add(this.moonLabel);
-
-
-        /*
-        // make moon orbit path
-        this.moonOrbit = new THREE.Mesh(
-            new THREE.TorusGeometry(1.0, 0.01, 10, 50),
-            new THREE.MeshBasicMaterial({color: WHITE, wireframe: false, transparent: true, opacity: 0.7})
-        );
-        this.moonOrbit.rotation.x = Math.PI / 2;
-        this.moonGroup.add(this.moonOrbit);
-        */
 
 
         /*
@@ -138,7 +170,8 @@ class App extends XRExampleBase{
     makeMars() {
         this.mars =  new PlanetGroup({
             planetRadius:0.3,
-            planetTexture:'mars.jpg'
+            planetTexture:'mars.jpg',
+            planetRotationFactor: 3,
         });
         this.floorGroup.add(this.mars.group);
         this.mars.group.visible = false;
@@ -148,7 +181,8 @@ class App extends XRExampleBase{
     makeJupiter() {
         this.jupiter =  new PlanetGroup({
             planetRadius:0.8,
-            planetTexture:'jupiter.jpg'
+            planetTexture:'jupiter.jpg',
+            planetRotationFactor: 0.5,
         });
         this.floorGroup.add(this.jupiter.group);
         this.jupiter.group.visible = false;
@@ -172,7 +206,7 @@ class App extends XRExampleBase{
     updateScene(frame){
         const rate = 0.003;
         this.planets.forEach((planet)=>{
-            planet.planet.rotation.y += rate;
+            planet.rotate(rate);
         });
     }
 
